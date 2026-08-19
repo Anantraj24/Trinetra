@@ -14,6 +14,23 @@ interface TrinetraDB extends DBSchema {
       data: unknown; // Prototype: stub structure for regional safety data
     };
   };
+  hazards: {
+    key: string; // hazardId
+    value: unknown;
+  };
+  telemetry: {
+    key: string; // telemetryId
+    value: unknown;
+  };
+  sync_queue: {
+    key: string; // stable id
+    value: {
+      id: string;
+      type: string;
+      payload: unknown;
+      createdAt: string;
+    };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<TrinetraDB>> | null = null;
@@ -26,6 +43,15 @@ if (typeof window !== 'undefined') {
       }
       if (!db.objectStoreNames.contains('safety_pack')) {
         db.createObjectStore('safety_pack', { keyPath: 'journeyId' });
+      }
+      if (!db.objectStoreNames.contains('hazards')) {
+        db.createObjectStore('hazards', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('telemetry')) {
+        db.createObjectStore('telemetry', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('sync_queue')) {
+        db.createObjectStore('sync_queue', { keyPath: 'id' });
       }
     },
   });
@@ -74,5 +100,34 @@ export const idbService = {
     const db = await dbPromise;
     const pack = await db.get('safety_pack', journeyId);
     return !!pack;
+  },
+
+  async enqueueSyncItem(id: string, type: string, payload: unknown): Promise<void> {
+    if (!dbPromise) return;
+    const db = await dbPromise;
+    await db.put('sync_queue', {
+      id,
+      type,
+      payload,
+      createdAt: new Date().toISOString()
+    });
+  },
+
+  async getSyncQueue(): Promise<{ id: string; type: string; payload: unknown; createdAt: string }[]> {
+    if (!dbPromise) return [];
+    const db = await dbPromise;
+    return db.getAll('sync_queue');
+  },
+
+  async dequeueSyncItem(id: string): Promise<void> {
+    if (!dbPromise) return;
+    const db = await dbPromise;
+    await db.delete('sync_queue', id);
+  },
+
+  async clearSyncQueue(): Promise<void> {
+    if (!dbPromise) return;
+    const db = await dbPromise;
+    await db.clear('sync_queue');
   }
 };

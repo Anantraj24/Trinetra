@@ -2,6 +2,7 @@ import { db } from '@/lib/firebase';
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { Incident, IncidentEvent, IncidentEventType } from '@/types/incident';
 import { IncidentStatus } from '@/types';
+import { idbService } from './idbService';
 
 class IncidentService {
   private collectionName = 'incidents';
@@ -24,7 +25,18 @@ class IncidentService {
       description
     };
     
-    await setDoc(newRef, newIncident);
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      // Offline: push to sync queue and idb cache
+      await idbService.enqueueSyncItem(newIncident.id, 'INCIDENT', newIncident);
+      return newIncident;
+    }
+
+    try {
+      await setDoc(newRef, newIncident);
+    } catch (_e) {
+      // Fallback if write fails
+      await idbService.enqueueSyncItem(newIncident.id, 'INCIDENT', newIncident);
+    }
     return newIncident;
   }
 
@@ -52,7 +64,16 @@ class IncidentService {
       metadata
     };
     
-    await setDoc(newRef, newEvent);
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      await idbService.enqueueSyncItem(newEvent.id, 'INCIDENT_EVENT', newEvent);
+      return newEvent;
+    }
+
+    try {
+      await setDoc(newRef, newEvent);
+    } catch (_e) {
+      await idbService.enqueueSyncItem(newEvent.id, 'INCIDENT_EVENT', newEvent);
+    }
     return newEvent;
   }
 
