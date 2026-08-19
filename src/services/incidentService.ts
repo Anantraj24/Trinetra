@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, updateDoc, onSnapshot, query, where, limit } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, onSnapshot, query, where, limit, getDocs } from 'firebase/firestore';
 import { Incident, IncidentEvent, IncidentEventType } from '@/types/incident';
 import { IncidentStatus } from '@/types';
 import { idbService } from './idbService';
@@ -106,6 +106,13 @@ class IncidentService {
     });
 
     return unsubscribe;
+  }
+
+  async getAllIncidents(): Promise<Incident[]> {
+    if (!db) throw new Error('Firestore is not initialized');
+    const q = query(collection(db, this.collectionName));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data() as Incident);
   }
 }
 

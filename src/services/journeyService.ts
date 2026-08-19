@@ -57,5 +57,15 @@ export const journeyService = {
       return querySnapshot.docs[0].data() as Journey;
     }
     return null;
+  },
+
+  async getAllActiveJourneys(): Promise<Journey[]> {
+    if (!db) throw new Error('Firestore is not initialized');
+    const q = query(
+      collection(db, COLLECTION),
+      where('status', '==', JourneyStatus.ACTIVE)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data() as Journey);
   }
 };

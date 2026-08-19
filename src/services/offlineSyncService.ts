@@ -32,6 +32,8 @@ class OfflineSyncService {
             collectionName = 'incidentEvents';
           } else if (item.type === 'TELEMETRY') {
             collectionName = 'telemetry';
+          } else if (item.type === 'CAPSULE' || item.type === 'CAPSULE_SIGN') {
+            collectionName = 'capsules';
           } else {
             console.warn(`[OfflineSyncService] Unknown item type: ${item.type}`);
             await idbService.dequeueSyncItem(item.id);
