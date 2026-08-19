@@ -10,6 +10,8 @@ export interface Hazard {
   expiresAt: string;
   distance?: number; // in meters or km, depending on context
   description: string;
+  active?: boolean;
+  region?: string;
   coordinates?: {
     latitude: number;
     longitude: number;

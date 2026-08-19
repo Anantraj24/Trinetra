@@ -84,15 +84,18 @@ export default function RoleEntry() {
             Authority Login
           </PrimaryButton>
 
-          <div className="relative flex items-center py-4">
+          <div className="relative flex items-center py-2">
             <div className="flex-grow border-t border-sand-light"></div>
-            <span className="flex-shrink-0 mx-4 text-taupe/50 text-sm">or</span>
+            <span className="flex-shrink-0 mx-4 text-taupe/50 text-xs uppercase font-bold tracking-wider">SIH 2024</span>
             <div className="flex-grow border-t border-sand-light"></div>
           </div>
 
-          <SecondaryButton onClick={handleDemoMode} className="w-full h-14 text-lg">
-            Open Demo Mode
-          </SecondaryButton>
+          <button
+            onClick={() => router.push('/demo')}
+            className="w-full h-14 text-base font-bold rounded-full bg-forest text-white hover:bg-forest/90 shadow-md transition-all active:scale-98 flex items-center justify-center gap-2"
+          >
+            Launch 19-Step SIH Guided Demo →
+          </button>
         </div>
       </div>
     </AppSurface>
