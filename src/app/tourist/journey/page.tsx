@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { AppSurface, PageHeader, GlassCard, PrimaryButton, StatusPill, SafetyCheckSheet, SafetyPulseCard } from '@/components/ui';
-import { JourneyMode, ConnectivityState } from '@/types/index';
+import { AppSurface, PageHeader, GlassCard, PrimaryButton, StatusPill, SafetyCheckSheet, SafetyPulseCard, HazardCard, HazardProvenanceSheet } from '@/components/ui';
+import { JourneyMode, ConnectivityState, Hazard, HazardTrustLevel } from '@/types/index';
 import { useAuth } from '@/contexts/AuthContext';
 import { journeyService } from '@/services/journeyService';
 import { incidentService } from '@/services/incidentService';
@@ -39,6 +39,22 @@ export default function LiveJourneyPage() {
   const [isSafetyCheckOpen, setIsSafetyCheckOpen] = useState(false);
   const [lastAcknowledgedScore, setLastAcknowledgedScore] = useState<number>(-1);
   const [toastMessage, setToastMessage] = useState('');
+  
+  // Hazard State
+  const [selectedHazard, setSelectedHazard] = useState<Hazard | null>(null);
+
+  // Demo hazard
+  const demoHazard: Hazard = useMemo(() => ({
+    id: 'demo-hazard-1',
+    type: 'Flash Flood Warning',
+    severity: 0.85,
+    trustLevel: HazardTrustLevel.VERIFIED,
+    source: 'Local Meteorological Department',
+    publishedAt: '2026-08-19T10:00:00.000Z',
+    expiresAt: '2026-08-20T10:00:00.000Z',
+    distance: 2.5,
+    description: 'Severe flash flooding detected along the primary river crossing. Primary route is impassable.'
+  }), []);
 
   useEffect(() => {
     const fetchActiveJourney = async () => {
@@ -208,6 +224,14 @@ export default function LiveJourneyPage() {
               </div>
             </div>
           </AppSurface>
+
+          <div>
+            <h3 className="font-bold text-taupe-dark mb-4">Nearby Risks</h3>
+            <HazardCard 
+              hazard={demoHazard} 
+              onClick={() => setSelectedHazard(demoHazard)} 
+            />
+          </div>
         </div>
 
         {/* Demo Risk Injector */}
@@ -295,6 +319,12 @@ export default function LiveJourneyPage() {
         onSafe={handleSafe} 
         onHelp={handleHelp} 
         onNoResponse={handleNoResponse} 
+      />
+
+      <HazardProvenanceSheet 
+        isOpen={!!selectedHazard} 
+        hazard={selectedHazard} 
+        onClose={() => setSelectedHazard(null)} 
       />
 
       {toastMessage && (

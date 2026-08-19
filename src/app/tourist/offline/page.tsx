@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AppSurface, GlassCard, PrimaryButton, SecondaryButton, StatusPill } from '@/components/ui';
+import { AppSurface, GlassCard, PrimaryButton, SecondaryButton, StatusPill, ShadowCorridorCard } from '@/components/ui';
 import { idbService } from '@/services/idbService';
 import { offlineSyncService } from '@/services/offlineSyncService';
 import { WifiOff, Wifi, ShieldAlert, Database, Map, AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
@@ -112,13 +112,21 @@ export default function SurvivalModePage() {
               <StatusPill label={hasSafetyPack ? 'CACHED' : 'MISSING'} status={hasSafetyPack ? 'alert' : 'neutral'} />
             </GlassCard>
 
-            <GlassCard className="!bg-black/20 !border-white/10 p-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Map className={hasActiveJourney ? 'text-safe' : 'text-taupe'} />
-                <span className="font-bold">Shadow Corridor</span>
+            {hasActiveJourney ? (
+              <div className="md:col-span-2">
+                <ShadowCorridorCard 
+                  onStartGuidance={() => router.push('/tourist/offline/guidance')}
+                />
               </div>
-              <StatusPill label={hasActiveJourney ? 'READY' : 'UNAVAILABLE'} status={hasActiveJourney ? 'success' : 'neutral'} />
-            </GlassCard>
+            ) : (
+              <GlassCard className="!bg-black/20 !border-white/10 p-5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Map className="text-taupe" />
+                  <span className="font-bold">Shadow Corridor</span>
+                </div>
+                <StatusPill label="UNAVAILABLE" status="neutral" />
+              </GlassCard>
+            )}
             
             <GlassCard className="!bg-black/20 !border-white/10 p-5 flex items-center justify-between md:col-span-2">
               <div className="flex items-center gap-3">
@@ -144,9 +152,11 @@ export default function SurvivalModePage() {
             <PrimaryButton className="w-full flex justify-center items-center gap-2" onClick={handleRetrySync} disabled={connectivity !== ConnectivityState.ONLINE || queueCount === 0}>
               <RefreshCw size={18} /> Retry Sync
             </PrimaryButton>
-            <SecondaryButton className="w-full text-sand border-sand/30 hover:bg-white/10" onClick={() => {}}>
-              <Map size={18} /> View Shadow Corridor
-            </SecondaryButton>
+            {!hasActiveJourney && (
+              <SecondaryButton className="w-full text-sand border-sand/30 hover:bg-white/10" onClick={() => {}} disabled>
+                <Map size={18} /> View Shadow Corridor
+              </SecondaryButton>
+            )}
             <SecondaryButton className="w-full text-sand border-sand/30 hover:bg-white/10" onClick={() => {}}>
               <AlertTriangle size={18} /> View Cached Hazards
             </SecondaryButton>

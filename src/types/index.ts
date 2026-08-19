@@ -18,10 +18,11 @@ export enum IncidentStatus {
 }
 
 export enum HazardTrustLevel {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
   VERIFIED = 'VERIFIED',
+  ESTABLISHED = 'ESTABLISHED',
+  AUTOMATED = 'AUTOMATED',
+  INFERRED = 'INFERRED',
+  UNVERIFIED = 'UNVERIFIED',
 }
 
 export enum UserRole {
@@ -31,3 +32,5 @@ export enum UserRole {
 export * from './safetyPass';
 export * from './journey';
 export * from './incident';
+export * from './hazard';  
+ 
