@@ -20,10 +20,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     // We intentionally redirect when user state resolves. Using a timeout or just returning null avoids the React warning, but redirecting with an effect is fine.
      
     if (!loading && !user && !error) {
-      setIsRedirecting(true);
+      setTimeout(() => setIsRedirecting(true), 0);
       router.push('/');
     } else if (!loading && user && allowedRoles && !allowedRoles.includes(user.role as UserRole)) {
-      setIsRedirecting(true);
+      setTimeout(() => setIsRedirecting(true), 0);
       // Redirect to correct shell based on role
       if (user.role === UserRole.TOURIST) {
         router.push('/tourist');
@@ -33,7 +33,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
         router.push('/');
       }
     } else {
-      setIsRedirecting(false);
+      setTimeout(() => setIsRedirecting(false), 0);
     }
   }, [user, loading, error, router, allowedRoles]);
 
