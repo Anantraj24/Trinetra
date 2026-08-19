@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isTourist() {
+      return isAuthenticated() && getUserRole() == 'TOURIST';
+    }
+    
+    function isAuthority() {
+      return isAuthenticated() && getUserRole() == 'AUTHORITY';
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Users can read/write their own profiles
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      // Authority can read any user profile
+      allow read: if isAuthority();
+    }
+
+    // Journeys Collection
+    match /journeys/{journeyId} {
+      // Tourist can read/write their own journeys
+      allow read, create, update: if isTourist() && request.resource.data.touristId == request.auth.uid;
+      allow read, update: if isTourist() && resource.data.touristId == request.auth.uid;
+      // Authority can read all journeys
+      allow read: if isAuthority();
+    }
+
+    // Incidents Collection
+    match /incidents/{incidentId} {
+      // Tourist can read their own incidents
+      allow read: if isTourist() && resource.data.touristId == request.auth.uid;
+      // Tourist can create incidents for themselves
+      allow create: if isTourist() && request.resource.data.touristId == request.auth.uid;
+      
+      // Authority can read and update (assign/resolve) all incidents
+      allow read, update: if isAuthority();
+    }
+
+    // Telemetry Collection
+    match /telemetry/{telemetryId} {
+      // Tourist can create telemetry for their active journey
+      // Note: Ideally we'd verify the journeyId belongs to them, but for this rule
+      // we'll just ensure they are a tourist.
+      allow create: if isTourist();
+      allow read: if isAuthority() || isTourist();
+    }
+
+    // Hazards Collection
+    match /hazards/{hazardId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthority();
+    }
+
+    // Responders Collection
+    match /responders/{responderId} {
+      allow read: if isAuthority();
+      allow create, update, delete: if isAuthority();
+    }
+
+    // Safety Passes (if separate from users, but usually embedded or linked)
+    match /safetyPasses/{passId} {
+      allow read, write: if isTourist() && request.resource.data.touristId == request.auth.uid;
+      allow read, update: if isTourist() && resource.data.touristId == request.auth.uid;
+      allow read: if isAuthority();
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

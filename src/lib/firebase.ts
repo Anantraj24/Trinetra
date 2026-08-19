@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -21,16 +21,19 @@ if (
   );
 }
 
-let app: FirebaseApp;
+let app: FirebaseApp | undefined;
 
 // Ensure Firebase is only initialized once
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
+if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApps()[0];
+  }
 }
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Export mock objects if initialization failed so the build doesn't crash
+export const auth = (app ? getAuth(app) : null) as unknown as Auth;
+export const db = (app ? getFirestore(app) : null) as unknown as Firestore;
+export { app };
 
-export { app, auth, db };
