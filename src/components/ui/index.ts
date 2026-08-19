@@ -17,5 +17,6 @@ export * from './SheetDrawer';
 export * from './ProfileDrawer';
 export * from './Skeleton';
 export * from './StatusPill';
-export * from './QRCodePlaceholder';  
+export * from './QRCodePlaceholder';
+export * from './JourneyMap';  
  

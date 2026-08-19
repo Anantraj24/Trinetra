@@ -10,14 +10,13 @@ import {
   DangerButton, 
   Skeleton,
   Pill,
-  QRCodePlaceholder,
-  IconButton
+  QRCodePlaceholder
 } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { safetyPassService } from '@/services/safetyPassService';
 import { SafetyPass } from '@/types';
 import { safetyPassSchema, SafetyPassFormData } from '@/features/tourist/SafetyPassSchema';
-import { Shield, Droplet, Phone, AlertCircle, Calendar, EyeOff, QrCode, X, Eye } from 'lucide-react';
+import { Shield, Droplet, Phone, AlertCircle, EyeOff, QrCode, X } from 'lucide-react';
 
 type ViewMode = 'loading' | 'view' | 'edit' | 'create';
 

@@ -27,5 +27,5 @@ export enum UserRole {
   TOURIST = 'TOURIST',
   AUTHORITY = 'AUTHORITY',
 }
-export * from './safetyPass';  
- 
+export * from './safetyPass';
+export * from './journey';
