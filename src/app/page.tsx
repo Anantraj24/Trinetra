@@ -1,69 +1,100 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDemoMode } from '@/hooks/useDemoMode';
+import { UserRole } from '@/types';
+import { AppSurface, PrimaryButton, SecondaryButton, Skeleton } from '@/components/ui';
+import { Shield } from 'lucide-react';
+
+function EyeLogo() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-taupe-dark">
+      <path d="M24 10C14.0589 10 5.48556 16.2917 2 24C5.48556 31.7083 14.0589 38 24 38C33.9411 38 42.5144 31.7083 46 24C42.5144 16.2917 33.9411 10 24 10Z" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M24 30C27.3137 30 30 27.3137 30 24C30 20.6863 27.3137 18 24 18C20.6863 18 18 20.6863 18 24C18 27.3137 20.6863 30 24 30Z" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export default function RoleEntry() {
+  const { user, loading, signInAsRole } = useAuth();
+  const { setDemoMode } = useDemoMode();
+  const router = useRouter();
+  const [isHandlingAuth, setIsHandlingAuth] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      if (user.role === UserRole.TOURIST) {
+        router.push('/tourist');
+      } else if (user.role === UserRole.AUTHORITY) {
+        router.push('/authority');
+      }
+    }
+  }, [user, loading, router]);
+
+  const handleTouristLogin = async () => {
+    setIsHandlingAuth(true);
+    setDemoMode(false);
+    await signInAsRole(UserRole.TOURIST);
+  };
+
+  const handleAuthorityLogin = async () => {
+    setIsHandlingAuth(true);
+    setDemoMode(false);
+    await signInAsRole(UserRole.AUTHORITY);
+  };
+
+  const handleDemoMode = async () => {
+    setIsHandlingAuth(true);
+    setDemoMode(true);
+    // Demo defaults to Tourist for demonstration purposes
+    await signInAsRole(UserRole.TOURIST);
+  };
+
+  if (loading || user || isHandlingAuth) {
+    return (
+      <AppSurface>
+        <div className="flex flex-col gap-4 p-8 w-full max-w-md mx-auto mt-20 items-center">
+          <Skeleton className="h-12 w-12 rounded-full mb-8" />
+          <Skeleton className="h-6 w-3/4 mb-4" />
+          <Skeleton className="h-10 w-full rounded-full" />
+          <Skeleton className="h-10 w-full rounded-full" />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </AppSurface>
+    );
+  }
+
+  return (
+    <AppSurface>
+      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-8 max-w-md mx-auto w-full">
+        <div className="flex flex-col items-center text-center gap-4">
+          <EyeLogo />
+          <h1 className="text-3xl font-bold text-taupe-dark tracking-tight">TRINETRA</h1>
+          <p className="text-taupe text-lg font-medium">Predict. Verify. Protect. Even Offline.</p>
         </div>
-      </main>
-    </div>
+
+        <div className="flex flex-col w-full gap-4 mt-8">
+          <PrimaryButton onClick={handleTouristLogin} className="w-full h-14 text-lg">
+            Continue as Tourist
+          </PrimaryButton>
+          
+          <PrimaryButton onClick={handleAuthorityLogin} className="w-full h-14 text-lg bg-taupe-dark text-white hover:bg-taupe">
+            <Shield size={20} className="mr-2 inline" />
+            Authority Login
+          </PrimaryButton>
+
+          <div className="relative flex items-center py-4">
+            <div className="flex-grow border-t border-sand-light"></div>
+            <span className="flex-shrink-0 mx-4 text-taupe/50 text-sm">or</span>
+            <div className="flex-grow border-t border-sand-light"></div>
+          </div>
+
+          <SecondaryButton onClick={handleDemoMode} className="w-full h-14 text-lg">
+            Open Demo Mode
+          </SecondaryButton>
+        </div>
+      </div>
+    </AppSurface>
   );
 }

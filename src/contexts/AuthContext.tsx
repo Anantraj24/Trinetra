@@ -34,7 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // If auth is undefined (e.g. env config missing), we should not crash the app
     // but just set error state or keep loading false so UI can show a warning
     if (!auth) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(new Error('Firebase auth not initialized'));
+       
       setLoading(false);
       return;
     }
@@ -48,9 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setUser(null);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Auth state change error:', err);
-        setError(err);
+        setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setLoading(false);
       }
@@ -79,9 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // For prototype, we can just set it
         setUser(existingUser);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('SignIn Error:', err);
-      setError(err);
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
@@ -92,9 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await firebaseSignOut(auth);
       setUser(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('SignOut Error:', err);
-      setError(err);
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }

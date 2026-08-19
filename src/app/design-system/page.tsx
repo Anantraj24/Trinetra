@@ -4,7 +4,7 @@ import { Bell, ArrowRight } from 'lucide-react';
 export default function DesignSystem() {
   return (
     <AppSurface>
-      <DesktopSidebar />
+      <DesktopSidebar items={[]} />
       <div className="flex-1 w-full pb-32 bg-ivory-warm">
         <PageHeader title="Design System" subtitle="TRINETRA Visual Language & Components" />
         
@@ -66,7 +66,7 @@ export default function DesignSystem() {
 
         </div>
       </div>
-      <BottomDock />
+      <BottomDock items={[]} />
     </AppSurface>
   );
 }

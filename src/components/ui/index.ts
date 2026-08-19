@@ -14,5 +14,6 @@ export * from './SafetyPulse';
 export * from './SecondaryButton';
 export * from './SectionHeader';
 export * from './SheetDrawer';
+export * from './ProfileDrawer';
 export * from './Skeleton';
 export * from './StatusPill';
