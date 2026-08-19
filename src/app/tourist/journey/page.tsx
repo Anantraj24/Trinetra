@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { journeyService } from '@/services/journeyService';
 import { incidentService } from '@/services/incidentService';
 import { idbService } from '@/services/idbService';
+import { capsuleService } from '@/services/capsuleService';
 import { Journey, JourneyStatus } from '@/types/journey';
 import { IncidentEventType } from '@/types/incident';
 import { evaluateRisk, RiskEngineInputs, RiskEngineOutputs } from '@/lib/riskEngine';
@@ -81,7 +82,7 @@ export default function LiveJourneyPage() {
   const handleAutoEscalation = async (score: number) => {
     if (!journey || !user?.uid || journey.status === JourneyStatus.SOS) return;
     try {
-      await incidentService.createIncident(journey.id, user.uid, "TRINETRA auto-escalated due to critical evidence and missing check-ins.", score);
+      const incident = await incidentService.createIncident(journey.id, user.uid, "TRINETRA auto-escalated due to critical evidence and missing check-ins.", score);
       await incidentService.addIncidentEvent(journey.id, IncidentEventType.SYSTEM_ESCALATION, "System auto-escalated to SOS.");
       await journeyService.updateJourneyStatus(journey.id, JourneyStatus.SOS);
       
@@ -91,7 +92,34 @@ export default function LiveJourneyPage() {
         await idbService.saveActiveJourney(j);
       }
 
-      router.push('/tourist/emergency');
+      // Generate Rescue Capsule
+      const capsule = await capsuleService.generateCapsule({
+        incidentId: incident.id,
+        journeyId: journey.id,
+        severity: score / 100,
+        riskScore: score,
+        confidence: riskOutputs?.confidence || 1,
+        trigger: demoInputs.explicitSOS ? 'MANUAL_SOS' : 'AUTO_ESCALATION',
+        lastSafeState: {
+          lat: journey.origin.lat,
+          lng: journey.origin.lng,
+          timestamp: new Date().toISOString()
+        },
+        currentEvidence: {
+          routeDeviationKm: demoInputs.routeDeviationKm,
+          connectivity: demoInputs.connectivity,
+          missedCheckins: demoInputs.missedCheckins,
+          inactivityMinutes: demoInputs.inactivityMinutes,
+        },
+        reasons: riskOutputs?.reasons || [],
+        hazardContext: [demoHazard],
+        touristEmergencyFields: {
+          bloodGroup: 'O+',
+          emergencyContact: 'Prototype Emergency Contact'
+        }
+      });
+
+      router.push(`/tourist/capsule/${capsule.id}`);
     } catch (err) {
       console.error(err);
     }
@@ -155,7 +183,7 @@ export default function LiveJourneyPage() {
     setIsSafetyCheckOpen(false);
     try {
       // Create Emergency Incident
-      await incidentService.createIncident(journey.id, user.uid, "User explicitly requested help during Safety Check.", riskOutputs?.score || 100);
+      const incident = await incidentService.createIncident(journey.id, user.uid, "User explicitly requested help during Safety Check.", riskOutputs?.score || 100);
       await journeyService.updateJourneyStatus(journey.id, JourneyStatus.SOS);
       
       const j = await idbService.getFirstActiveJourney();
@@ -164,7 +192,34 @@ export default function LiveJourneyPage() {
         await idbService.saveActiveJourney(j);
       }
 
-      router.push('/tourist/emergency');
+      // Generate Rescue Capsule
+      const capsule = await capsuleService.generateCapsule({
+        incidentId: incident.id,
+        journeyId: journey.id,
+        severity: (riskOutputs?.score || 100) / 100,
+        riskScore: riskOutputs?.score || 100,
+        confidence: riskOutputs?.confidence || 1,
+        trigger: 'USER_CONFIRMED_HELP',
+        lastSafeState: {
+          lat: journey.origin.lat,
+          lng: journey.origin.lng,
+          timestamp: new Date().toISOString()
+        },
+        currentEvidence: {
+          routeDeviationKm: demoInputs.routeDeviationKm,
+          connectivity: demoInputs.connectivity,
+          missedCheckins: demoInputs.missedCheckins,
+          inactivityMinutes: demoInputs.inactivityMinutes,
+        },
+        reasons: riskOutputs?.reasons || [],
+        hazardContext: [demoHazard],
+        touristEmergencyFields: {
+          bloodGroup: 'O+',
+          emergencyContact: 'Prototype Emergency Contact'
+        }
+      });
+
+      router.push(`/tourist/capsule/${capsule.id}`);
     } catch (err) {
       console.error(err);
     }

@@ -22,6 +22,10 @@ interface TrinetraDB extends DBSchema {
     key: string; // telemetryId
     value: unknown;
   };
+  capsules: {
+    key: string; // capsuleId
+    value: unknown; // RescueCapsule
+  };
   sync_queue: {
     key: string; // stable id
     value: {
@@ -49,6 +53,9 @@ if (typeof window !== 'undefined') {
       }
       if (!db.objectStoreNames.contains('telemetry')) {
         db.createObjectStore('telemetry', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('capsules')) {
+        db.createObjectStore('capsules', { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains('sync_queue')) {
         db.createObjectStore('sync_queue', { keyPath: 'id' });
@@ -123,6 +130,24 @@ export const idbService = {
     if (!dbPromise) return;
     const db = await dbPromise;
     await db.delete('sync_queue', id);
+  },
+
+  async getQueueCount(): Promise<number> {
+    if (!dbPromise) return 0;
+    const db = await dbPromise;
+    return db.count('sync_queue');
+  },
+
+  async saveCapsule(capsule: unknown): Promise<void> {
+    if (!dbPromise) return;
+    const db = await dbPromise;
+    await db.put('capsules', capsule);
+  },
+
+  async getCapsule(id: string): Promise<unknown | undefined> {
+    if (!dbPromise) return undefined;
+    const db = await dbPromise;
+    return db.get('capsules', id);
   },
 
   async clearSyncQueue(): Promise<void> {
