@@ -36,3 +36,4 @@ export * from './journey';
 export * from './incident';
 export * from './hazard';  
  export * from './capsule';
+export * from './responder';

@@ -1,7 +1,7 @@
 import { RescueCapsule } from '@/types/capsule';
 import { idbService } from './idbService';
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, query, where, getDocs, documentId } from 'firebase/firestore';
+import { collection, doc, setDoc, query, where, getDocs, limit, documentId } from 'firebase/firestore';
 
 class CapsuleService {
   async generateCapsule(capsuleData: Omit<RescueCapsule, 'id' | 'createdAt' | 'integrityValue' | 'isPendingServerVerification'>): Promise<RescueCapsule> {
@@ -80,6 +80,15 @@ class CapsuleService {
       });
     }
     return capsules;
+  }
+
+  /** Fetch the Rescue Capsule for a single incident. */
+  async getCapsuleForIncident(incidentId: string): Promise<RescueCapsule | null> {
+    if (!db) return null;
+    const q = query(collection(db, 'capsules'), where('incidentId', '==', incidentId), limit(1));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    return snapshot.docs[0].data() as RescueCapsule;
   }
 }
 
