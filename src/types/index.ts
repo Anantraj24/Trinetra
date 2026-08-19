@@ -12,8 +12,10 @@ export enum ConnectivityState {
 }
 
 export enum IncidentStatus {
-  OPEN = 'OPEN',
+  CREATED = 'CREATED',
+  RECEIVED = 'RECEIVED',
   ASSIGNED = 'ASSIGNED',
+  IN_PROGRESS = 'IN_PROGRESS',
   RESOLVED = 'RESOLVED',
 }
 

@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { Incident, IncidentEvent, IncidentEventType } from '@/types/incident';
 import { IncidentStatus } from '@/types';
 import { idbService } from './idbService';
@@ -19,7 +19,7 @@ class IncidentService {
       id: newRef.id,
       journeyId,
       touristId,
-      status: IncidentStatus.OPEN,
+      status: IncidentStatus.CREATED,
       reportedAt: new Date().toISOString(),
       severity,
       description
@@ -84,6 +84,28 @@ class IncidentService {
       updatedAt: new Date().toISOString(),
       ...(status === IncidentStatus.RESOLVED ? { resolvedAt: new Date().toISOString() } : {})
     });
+  }
+
+  listenToActiveIncident(journeyId: string, callback: (incident: Incident | null) => void): () => void {
+    const q = query(
+      collection(db, this.collectionName), 
+      where('journeyId', '==', journeyId),
+      limit(1)
+    );
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      if (snapshot.empty) {
+        callback(null);
+      } else {
+        const incident = snapshot.docs[0].data() as Incident;
+        await idbService.saveIncident(incident);
+        callback(incident);
+      }
+    }, (error) => {
+      console.error("Error listening to incident:", error);
+    });
+
+    return unsubscribe;
   }
 }
 

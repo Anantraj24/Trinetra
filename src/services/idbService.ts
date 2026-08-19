@@ -26,6 +26,10 @@ interface TrinetraDB extends DBSchema {
     key: string; // capsuleId
     value: unknown; // RescueCapsule
   };
+  incidents: {
+    key: string; // incidentId
+    value: unknown; // Incident
+  };
   sync_queue: {
     key: string; // stable id
     value: {
@@ -56,6 +60,9 @@ if (typeof window !== 'undefined') {
       }
       if (!db.objectStoreNames.contains('capsules')) {
         db.createObjectStore('capsules', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('incidents')) {
+        db.createObjectStore('incidents', { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains('sync_queue')) {
         db.createObjectStore('sync_queue', { keyPath: 'id' });
@@ -148,6 +155,27 @@ export const idbService = {
     if (!dbPromise) return undefined;
     const db = await dbPromise;
     return db.get('capsules', id);
+  },
+
+  async saveIncident(incident: unknown): Promise<void> {
+    if (!dbPromise) return;
+    const db = await dbPromise;
+    await db.put('incidents', incident);
+  },
+
+  async getIncident(id: string): Promise<unknown | undefined> {
+    if (!dbPromise) return undefined;
+    const db = await dbPromise;
+    return db.get('incidents', id);
+  },
+  
+  async getFirstIncident(): Promise<unknown | undefined> {
+    if (!dbPromise) return undefined;
+    const db = await dbPromise;
+    const tx = db.transaction('incidents', 'readonly');
+    const store = tx.objectStore('incidents');
+    const cursor = await store.openCursor();
+    return cursor ? cursor.value : undefined;
   },
 
   async clearSyncQueue(): Promise<void> {
