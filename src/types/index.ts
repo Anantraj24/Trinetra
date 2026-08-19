@@ -7,6 +7,7 @@ export enum JourneyMode {
 
 export enum ConnectivityState {
   ONLINE = 'ONLINE',
+  POOR = 'POOR',
   OFFLINE = 'OFFLINE',
 }
 
@@ -29,3 +30,4 @@ export enum UserRole {
 }
 export * from './safetyPass';
 export * from './journey';
+export * from './incident';

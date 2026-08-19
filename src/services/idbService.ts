@@ -44,6 +44,15 @@ export const idbService = {
     return db.get('active_journey', journeyId);
   },
 
+  async getFirstActiveJourney(): Promise<Journey | undefined> {
+    if (!dbPromise) return undefined;
+    const db = await dbPromise;
+    const tx = db.transaction('active_journey', 'readonly');
+    const store = tx.objectStore('active_journey');
+    const cursor = await store.openCursor();
+    return cursor ? cursor.value : undefined;
+  },
+
   async clearActiveJourney(journeyId: string): Promise<void> {
     if (!dbPromise) return;
     const db = await dbPromise;

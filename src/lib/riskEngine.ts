@@ -1,5 +1,4 @@
-export type ConnectivityState = 'ONLINE' | 'POOR' | 'OFFLINE';
-export type JourneyMode = 'NOMAD' | 'WATCH' | 'GUARDIAN' | 'SENTINEL';
+import { JourneyMode, ConnectivityState } from '@/types/index';
 
 export interface RiskEngineInputs {
   routeDeviationKm: number;
@@ -33,7 +32,7 @@ export function evaluateRisk(inputs: RiskEngineInputs): RiskEngineOutputs {
     return {
       score: 100,
       confidence: 1.0,
-      mode: 'SENTINEL',
+      mode: JourneyMode.SENTINEL,
       reasons: [{
         signal: 'Explicit SOS',
         normalizedSeverity: 1.0,
@@ -158,10 +157,10 @@ export function evaluateRisk(inputs: RiskEngineInputs): RiskEngineOutputs {
   confidence = Math.max(confidence, 0.0);
 
   // Determine Mode
-  let mode: JourneyMode = 'NOMAD';
-  if (score >= 80) mode = 'SENTINEL';
-  else if (score >= 55) mode = 'GUARDIAN';
-  else if (score >= 30) mode = 'WATCH';
+  let mode = JourneyMode.NOMAD;
+  if (score >= 80) mode = JourneyMode.SENTINEL;
+  else if (score >= 55) mode = JourneyMode.GUARDIAN;
+  else if (score >= 30) mode = JourneyMode.WATCH;
 
   // Determine Escalation & Verification
   const independentSignalsCount = reasons.length;
